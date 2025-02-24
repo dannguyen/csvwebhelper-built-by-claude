@@ -1,0 +1,30 @@
+{
+  "name": "csv-webhelper",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "check": "svelte-check --tsconfig ./tsconfig.json",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "coverage": "vitest run --coverage"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^3.0.1",
+    "@testing-library/svelte": "^4.0.5",
+    "@tsconfig/svelte": "^5.0.2",
+    "@vitest/coverage-v8": "^1.2.2",
+    "autoprefixer": "^10.4.16",
+    "jsdom": "^24.0.0",
+    "postcss": "^8.4.33",
+    "svelte": "^4.2.9",
+    "svelte-check": "^3.6.2",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.2.2",
+    "vite": "^5.0.12",
+    "vitest": "^1.2.2"
+  }
+}

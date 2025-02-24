@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-bg-light text-text font-sans;
+    line-height: 1.6;
+    padding: 20px;
+  }
+}
+
+@layer components {
+  .container {
+    @apply max-w-3xl mx-auto p-5 bg-white rounded shadow;
+  }
+  
+  .upload-label {
+    @apply flex flex-col items-center justify-center p-8 border-2 border-dashed border-primary-light rounded cursor-pointer transition-all bg-primary/5 hover:border-primary hover:bg-primary/10;
+  }
+  
+  .error {
+    @apply text-danger bg-danger/10 p-3 rounded mb-6;
+  }
+  
+  .results {
+    @apply grid grid-cols-1 gap-6;
+  }
+  
+  .stat-card {
+    @apply bg-primary-light text-white p-6 rounded text-center;
+  }
+  
+  .stat-value {
+    @apply text-3xl font-bold;
+  }
+}
+
+@media (max-width: 600px) {
+  .container {
+    @apply p-4;
+  }
+  
+  .upload-label {
+    @apply p-6;
+  }
+  
+  .stat-value {
+    @apply text-4xl;
+  }
+}
