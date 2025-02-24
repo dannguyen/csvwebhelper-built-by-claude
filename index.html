@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSV Analyzer</title>
+  
+  <!-- Import Svelte using UMD build which is more compatible with direct browser usage -->
+  <script src="https://cdn.jsdelivr.net/npm/svelte@5.0.0-next.1/dist/svelte.umd.js"></script>
+  
+  <style>
+    :root {
+      --primary: #4361ee;
+      --primary-light: #4895ef;
+      --primary-dark: #3f37c9;
+      --success: #4cc9f0;
+      --danger: #f72585;
+      --bg-light: #f8f9fa;
+      --bg-dark: #212529;
+      --text: #212529;
+      --text-light: #495057;
+      --border: #dee2e6;
+      --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      --radius: 8px;
+      --transition: all 0.3s ease;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      background-color: var(--bg-light);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: white;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    
+    h1 {
+      color: var(--primary-dark);
+      margin-bottom: 24px;
+      text-align: center;
+    }
+    
+    h2 {
+      color: var(--text);
+      margin-bottom: 8px;
+      font-size: 1.2rem;
+    }
+    
+    .upload-container {
+      margin-bottom: 24px;
+    }
+    
+    .upload-label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 32px;
+      border: 2px dashed var(--primary-light);
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: var(--transition);
+      background-color: rgba(67, 97, 238, 0.05);
+    }
+    
+    .upload-label:hover {
+      border-color: var(--primary);
+      background-color: rgba(67, 97, 238, 0.1);
+    }
+    
+    .upload-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+    
+    input[type="file"] {
+      display: none;
+    }
+    
+    .error {
+      color: var(--danger);
+      background-color: rgba(247, 37, 133, 0.1);
+      padding: 12px;
+      border-radius: var(--radius);
+      margin-bottom: 24px;
+    }
+    
+    .results {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+    
+    .stat-card {
+      background-color: var(--primary-light);
+      color: white;
+      padding: 24px;
+      border-radius: var(--radius);
+      text-align: center;
+    }
+    
+    .stat-value {
+      font-size: 3rem;
+      font-weight: bold;
+    }
+    
+    .field-list {
+      background-color: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+    }
+    
+    .field-list ul {
+      list-style: none;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    
+    .field-list li {
+      background-color: var(--bg-light);
+      color: var(--primary-dark);
+      padding: 6px 12px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      font-size: 0.9rem;
+    }
+    
+    details {
+      background-color: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+    }
+    
+    summary {
+      font-weight: bold;
+      cursor: pointer;
+      padding: 8px 0;
+    }
+    
+    summary:hover {
+      color: var(--primary);
+    }
+    
+    .preview-table {
+      overflow-x: auto;
+      margin-top: 16px;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    th, td {
+      padding: 8px 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    th {
+      background-color: var(--bg-light);
+    }
+    
+    tr:nth-child(even) {
+      background-color: var(--bg-light);
+    }
+    
+    @media (max-width: 600px) {
+      .container {
+        padding: 16px;
+      }
+      
+      .upload-label {
+        padding: 24px;
+      }
+      
+      .stat-value {
+        font-size: 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+
+  <script>
+    // Since we're using a more basic approach without Svelte's compiler,
+    // let's use vanilla JS with the same UI
+    
+    document.addEventListener('DOMContentLoaded', () => {
+      const app = document.getElementById('app');
+      
+      // Initial HTML structure
+      app.innerHTML = `
+        <div class="container">
+          <h1>CSV Analyzer</h1>
+          
+          <div class="upload-container">
+            <label for="csv-upload" class="upload-label">
+              <div class="upload-icon">📊</div>
+              <span>Choose a CSV file or drag it here</span>
+            </label>
+            <input id="csv-upload" type="file" accept=".csv" />
+          </div>
+          
+          <div id="error" class="error" style="display: none;"></div>
+          
+          <div id="results" class="results" style="display: none;"></div>
+        </div>
+      `;
+
+      // Get elements
+      const fileInput = document.getElementById('csv-upload');
+      const errorDiv = document.getElementById('error');
+      const resultsDiv = document.getElementById('results');
+      const uploadLabel = document.querySelector('.upload-label span');
+      
+      // Handle file upload
+      fileInput.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        if (file.type !== 'text/csv' && !file.name.endsWith('.csv')) {
+          showError('Please upload a CSV file');
+          return;
+        }
+        
+        uploadLabel.textContent = 'Processing...';
+        fileInput.disabled = true;
+        errorDiv.style.display = 'none';
+        
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+          try {
+            const text = e.target.result;
+            parseCSV(text);
+          } catch (err) {
+            showError('Error parsing CSV: ' + err.message);
+          } finally {
+            uploadLabel.textContent = 'Choose a CSV file or drag it here';
+            fileInput.disabled = false;
+          }
+        };
+        
+        reader.onerror = function() {
+          showError('Error reading file');
+          uploadLabel.textContent = 'Choose a CSV file or drag it here';
+          fileInput.disabled = false;
+        };
+        
+        reader.readAsText(file);
+      });
+      
+      function showError(message) {
+        errorDiv.textContent = message;
+        errorDiv.style.display = 'block';
+        resultsDiv.style.display = 'none';
+      }
+      
+      function parseCSV(text) {
+        // Simple CSV parser
+        const lines = text.split(/\r\n|\n/);
+        if (lines.length === 0) {
+          showError('CSV file is empty');
+          return;
+        }
+        
+        // Detect delimiter (comma, semicolon, tab)
+        const firstLine = lines[0];
+        let delimiter = ',';
+        if (firstLine.includes(';')) delimiter = ';';
+        else if (firstLine.includes('\t')) delimiter = '\t';
+        
+        // Get headers
+        const headers = lines[0].split(delimiter).map(header => header.trim().replace(/^"|"$/g, ''));
+        
+        // Process data rows
+        const rows = [];
+        for (let i = 1; i < lines.length; i++) {
+          if (lines[i].trim() === '') continue;
+          
+          // Handle quoted fields with commas correctly
+          let row = [];
+          let fieldBuffer = '';
+          let inQuotes = false;
+          
+          for (let char of lines[i]) {
+            if (char === '"') {
+              inQuotes = !inQuotes;
+            } else if (char === delimiter && !inQuotes) {
+              row.push(fieldBuffer.trim());
+              fieldBuffer = '';
+            } else {
+              fieldBuffer += char;
+            }
+          }
+          
+          if (fieldBuffer) {
+            row.push(fieldBuffer.trim());
+          }
+          
+          rows.push(row);
+        }
+        
+        displayResults({
+          headers: headers,
+          rowCount: rows.length,
+          sampleRows: rows.slice(0, 3)
+        });
+      }
+      
+      function displayResults(csvData) {
+        // Create HTML for results
+        let html = `
+          <div class="stat-card">
+            <h2>Total Rows</h2>
+            <div class="stat-value">${csvData.rowCount.toLocaleString()}</div>
+          </div>
+          
+          <div class="field-list">
+            <h2>CSV Fields</h2>
+            <ul>
+              ${csvData.headers.map(header => `<li>${header}</li>`).join('')}
+            </ul>
+          </div>
+          
+          <details>
+            <summary>Column Preview</summary>
+            <div class="preview-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Field Name</th>
+                    <th>Row 1</th>
+                    <th>Row 2</th>
+                    <th>Row 3</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${csvData.headers.map((header, headerIndex) => `
+                    <tr>
+                      <th>${header}</th>
+                      ${csvData.sampleRows.map((row, rowIndex) => {
+                        // Only show up to 3 rows and ensure we don't exceed array bounds
+                        return rowIndex < 3 && headerIndex < row.length ? 
+                          `<td>${row[headerIndex]}</td>` : 
+                          `<td>-</td>`;
+                      }).join('')}
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </details>
+        `;
+        
+        resultsDiv.innerHTML = html;
+        resultsDiv.style.display = 'grid';
+      }
+    });
+  </script>
+</body>
+</html>
